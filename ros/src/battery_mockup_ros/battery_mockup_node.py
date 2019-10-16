@@ -2,13 +2,19 @@ import rospy
 import sensor_msgs.msg as sensor_msgs
 from std_msgs.msg import Bool
 
+import numpy as np
+
 class Battery:
     """
     """
     def __init__(self):
-        # ros communications
-        self.battery_publisher = rospy.Publisher('/battery/sensor_state', sensor_msgs.BatteryState, queue_size=1, latch=True)
-        rospy.Subscriber('/battery/is_charging', Bool, self.chargingCallback)
+        # register node in ROS network
+        rospy.init_node('battery_mockup', anonymous=False)
+
+        # setup publisher with the battery state
+        self.battery_publisher = rospy.Publisher('/battery_mockup/battery_state', sensor_msgs.BatteryState, queue_size=1)
+        # subscibe to the is_charging topic
+        rospy.Subscriber('/battery_mockup/is_charging', Bool, self.chargingCallback)
 
         # initialisations
         self.battery = sensor_msgs.BatteryState()
@@ -18,35 +24,44 @@ class Battery:
         self.battery.charge = float('nan')
         self.battery.capacity = float('nan')
         self.battery.design_capacity = float('nan')
-        self.battery.percentage = 100
+        self.battery.percentage = 1
         self.battery.power_supply_health = sensor_msgs.BatteryState.POWER_SUPPLY_HEALTH_GOOD
         self.battery.power_supply_technology = sensor_msgs.BatteryState.POWER_SUPPLY_TECHNOLOGY_LION
-        self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_FULL
+        self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
         self.battery.present = True
         self.battery.location = ""
         self.battery.serial_number = ""
 
+        # is the robot currently charging
         self.is_charging = False
-        self.start_time = rospy.get_rostime()
+        self.seconds_elapsed = 0
 
-        if rospy.has_param('/battery/battery_autonomy'):
-            # retrieves the threshold from the parameter server in the case where the parameter exists
-            self.battery_autonomy = rospy.get_param('/battery/battery_autonomy')
+        if rospy.has_param('/battery_mockup/battery_autonomy'):
+            # retrieves the battery autonomy
+            self.battery_autonomy = rospy.get_param('/battery_mockup/battery_autonomy')
         else:
-            self.battery_autonomy = 100
+            self.battery_autonomy = 30
 
-    def battery_charge(time, battery_autonomy):
-        lb = np.log(2)/(battery_autonomy/2)*10
+        # battery half life and total life
+        self.bat_half_life = (10.0-np.log(1))/(np.log(2)/(self.battery_autonomy/2)*10)
+        self.bat_max_life = 2*self.bat_half_life
+
+    # Battery charge model
+    def battery_charge(self, time, battery_life):
+        lb = np.log(2)/(battery_life/2)*10
         return 1/(1+np.exp(-lb*time+10))
 
-    def battery_discharge(time, battery_autonomy):
-        lb = np.log(2)/(battery_autonomy/2)*10
+    # Battery discharge model
+    def battery_discharge(self, time, battery_life):
+        lb = np.log(2)/(battery_life/2)*10
         return 1/-(1+np.exp(-lb*time+10))+1
 
-    def chargingCallback(self, is_charging):
-        if self.is_charging != is_charging:
-            self.is_charging = is_charging
-            self.start_time = rospy.get_rostime()
+    # Called when robot changes state, from charging to discharging or vice-versa
+    def chargingCallback(self, charging_state):
+        if self.is_charging != bool(charging_state.data):
+            self.is_charging = bool(charging_state.data)
+            # mirror the time elapsed to obtain the exact correspondence between the discharge and charge model timestamp
+            self.seconds_elapsed = self.bat_half_life+(self.bat_half_life-self.seconds_elapsed)
 
     def spin(self):
         """
@@ -54,19 +69,19 @@ class Battery:
         """
         rate = rospy.Rate(1)  # hz
         while not rospy.is_shutdown():
-            elapsed_time = rospy.get_rostime - self.start_time
-            print(elapsed_time)
-            # if self.is_charging:
-            #     self.battery.percentage = min(100, battery_charge(time_charge_start, self.battery_autonomy))
+            if self.is_charging:
+                self.battery.percentage = min(1, self.battery_charge(self.seconds_elapsed, self.battery_autonomy))
+                self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_CHARGING
+            else:
+                self.battery.percentage = max(0, self.battery_discharge(self.seconds_elapsed, self.battery_autonomy))
+                self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
 
-            #     print('Charging')
-            #     print('bat level: ', self.battery.percentage)
-            # else:
-            #     self.battery.percentage = max(0, battery_discharge(time_since_last_charge, self.battery_autonomy))
-
-            #     print('Discharging')
-            #     print('bat level: ', self.battery.percentage)
-
-            # self.battery.header.stamp = rospy.get_rostime()  # get_rostime() returns the time in rospy.Time structure
-            # self.battery_publisher.publish(self.battery)
+            self.battery.header.stamp = rospy.get_rostime()
+            self.battery_publisher.publish(self.battery)
             rate.sleep()
+
+            self.seconds_elapsed = min(self.bat_max_life, self.seconds_elapsed+1)
+
+def main():
+    robot_1_battery = Battery()
+    robot_1_battery.spin()

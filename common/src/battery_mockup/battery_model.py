@@ -15,11 +15,17 @@ def battery_discharge(time, battery_autonomy):
     return 1/-(1+np.exp(-lb*time+10))+1
 
 if __name__ == '__main__':
-    time = np.arange(0,20,0.1)
-    charge_level = battery_charge(time, battery_autonomy=7)
-    dicharge_level = battery_discharge(time, battery_autonomy=7)
+    bat_aut = 30
+    lb = np.log(2)/(bat_aut/2)*10
+    half_life = (10-np.log(1))/lb
 
-    # print(level)
+    time = np.arange(0,40,1)
+    charge_level = battery_charge(time, battery_autonomy=bat_aut)
+    dicharge_level = battery_discharge(time, battery_autonomy=bat_aut)
+
+    t = 25
+    print(t, battery_charge(t, battery_autonomy=bat_aut))
+    print(half_life+(half_life-t), battery_discharge(half_life+(half_life-t), battery_autonomy=bat_aut))
 
     sns.set()
 
