@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+ <!-- small description about your node -->
+ 
+ <node pkg="battery_mockup" type="battery_mockup_node" name="battery_mockup"
+ respawn="false" output="screen" args="$(find battery_mockup_name)/ros/config/config_battery_mockup.yaml"/>
+
+</launch>

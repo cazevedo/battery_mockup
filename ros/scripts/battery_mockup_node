@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import battery_mockup_ros.battery_mockup_node
+
+if __name__ == '__main__':
+ battery_mockup_ros.battery_mockup_node.main()
