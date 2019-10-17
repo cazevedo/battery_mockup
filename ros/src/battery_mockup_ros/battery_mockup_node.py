@@ -9,12 +9,12 @@ class Battery:
     """
     def __init__(self):
         # register node in ROS network
-        rospy.init_node('battery_mockup', anonymous=False)
-
+        rospy.init_node('single_robot_battery_mockup', anonymous=False)
+        
         # setup publisher with the battery state
-        self.battery_publisher = rospy.Publisher('/battery_mockup/battery_state', sensor_msgs.BatteryState, queue_size=1)
+        self.battery_publisher = rospy.Publisher('~battery_state', sensor_msgs.BatteryState, queue_size=1)
         # subscibe to the is_charging topic
-        rospy.Subscriber('/battery_mockup/is_charging', Bool, self.chargingCallback)
+        rospy.Subscriber('~is_charging', Bool, self.chargingCallback)
 
         # initialisations
         self.battery = sensor_msgs.BatteryState()
@@ -36,9 +36,9 @@ class Battery:
         self.is_charging = False
         self.seconds_elapsed = 0
 
-        if rospy.has_param('/battery_mockup/battery_autonomy'):
+        if rospy.has_param('~battery_autonomy'):
             # retrieves the battery autonomy
-            self.battery_autonomy = rospy.get_param('/battery_mockup/battery_autonomy')
+            self.battery_autonomy = rospy.get_param('~battery_autonomy')
         else:
             self.battery_autonomy = 30
 
@@ -83,5 +83,5 @@ class Battery:
             self.seconds_elapsed = min(self.bat_max_life, self.seconds_elapsed+1)
 
 def main():
-    robot_1_battery = Battery()
-    robot_1_battery.spin()
+    battery = Battery()
+    battery.spin()
