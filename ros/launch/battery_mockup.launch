@@ -2,8 +2,15 @@
 <launch>
 
  <!-- small description about your node -->
+<rosparam command="load" file="$(find battery_mockup)/ros/config/config_battery_mockup.yaml" />
  
- <node pkg="battery_mockup" type="battery_mockup_node" name="battery_mockup"
- respawn="false" output="screen" args="$(find battery_mockup_name)/ros/config/config_battery_mockup.yaml"/>
+<node pkg="battery_mockup" type="battery_mockup_node" name="robot_0"
+ respawn="false" output="screen"/>
+ <node pkg="battery_mockup" type="battery_mockup_node" name="robot_1"
+ respawn="false" output="screen"/>
+ <node pkg="battery_mockup" type="battery_mockup_node" name="robot_2"
+ respawn="false" output="screen"/>
+
+
 
 </launch>
