@@ -10,6 +10,8 @@
  respawn="false" output="screen"/>
  <node pkg="battery_mockup" type="battery_mockup_node" name="robot_2"
  respawn="false" output="screen"/>
+ <node pkg="battery_mockup" type="battery_mockup_node" name="robot_3"
+ respawn="false" output="screen"/>
 
 
 
