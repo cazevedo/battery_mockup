@@ -1,12 +1,12 @@
 robot_0: {
-    battery_autonomy: 30,
+    battery_mockup/battery_autonomy: 200,
 }
 robot_1: {
-    battery_autonomy: 30,
+    battery_mockup/battery_autonomy: 200,
 }
 robot_2: {
-    battery_autonomy: 30,
+    battery_mockup/battery_autonomy: 200,
 }
 robot_3: {
-    battery_autonomy: 30,
+    battery_mockup/battery_autonomy: 200,
 }
