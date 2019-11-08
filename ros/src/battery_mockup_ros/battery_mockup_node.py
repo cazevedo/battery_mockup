@@ -9,8 +9,8 @@ class Battery:
     """
     def __init__(self):
         # register node in ROS network
-        rospy.init_node('single_robot_battery_mockup', anonymous=False)
-        
+        rospy.init_node('~single_robot_battery_mockup', anonymous=False)
+
         # setup publisher with the battery state
         self.battery_publisher = rospy.Publisher('~battery_state', sensor_msgs.BatteryState, queue_size=1)
         # subscibe to the is_charging topic
@@ -33,8 +33,7 @@ class Battery:
         self.battery.serial_number = ""
 
         # is the robot currently charging
-        self.is_charging = False
-        self.seconds_elapsed = 0
+        self.is_charging = True
 
         if rospy.has_param('~battery_autonomy'):
             # retrieves the battery autonomy
@@ -42,18 +41,32 @@ class Battery:
         else:
             self.battery_autonomy = 30
 
+        print('Battery autonomy: ', self.battery_autonomy)
+
         # battery half life and total life
         self.bat_half_life = (10.0-np.log(1))/(np.log(2)/(self.battery_autonomy/2)*10)
         self.bat_max_life = 2*self.bat_half_life
 
+        # Set the initial battery level
+        # self.seconds_elapsed = 0
+        # self.seconds_elapsed = np.random.choice([0, self.bat_half_life, self.bat_max_life])
+        self.seconds_elapsed = np.random.uniform(0, self.bat_max_life)
+        print('Seconds chosen : ', self.seconds_elapsed)
+
+        self.white_noise = True
+
     # Battery charge model
-    def battery_charge(self, time, battery_life):
-        lb = np.log(2)/(battery_life/2)*10
+    def battery_charge(self, time, battery_autonomy):
+        if self.white_noise:
+            battery_autonomy = np.random.normal(loc=battery_autonomy, scale=3)
+        lb = np.log(2)/(battery_autonomy/2)*10
         return 1/(1+np.exp(-lb*time+10))
 
     # Battery discharge model
-    def battery_discharge(self, time, battery_life):
-        lb = np.log(2)/(battery_life/2)*10
+    def battery_discharge(self, time, battery_autonomy):
+        if self.white_noise:
+            battery_autonomy = np.random.normal(loc=battery_autonomy, scale=3)
+        lb = np.log(2)/(battery_autonomy/2)*10
         return 1/-(1+np.exp(-lb*time+10))+1
 
     # Called when robot changes state, from charging to discharging or vice-versa
