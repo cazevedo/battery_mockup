@@ -48,8 +48,11 @@ class Battery:
         self.bat_max_life = 2*self.bat_half_life
 
         # Set the initial battery level
+        # Discharged
         # self.seconds_elapsed = 0
+        # Choice between 0, half or fully charged
         # self.seconds_elapsed = np.random.choice([0, self.bat_half_life, self.bat_max_life])
+        # Uniform distribution
         self.seconds_elapsed = np.random.uniform(0, self.bat_max_life)
         print('Seconds chosen : ', self.seconds_elapsed)
 
