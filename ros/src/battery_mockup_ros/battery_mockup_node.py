@@ -2,6 +2,9 @@ import rospy
 import sensor_msgs.msg as sensor_msgs
 from std_msgs.msg import Bool
 
+from battery_mockup.srv import CheckPercentage
+from battery_mockup.srv import CheckPercentageResponse
+
 import numpy as np
 
 class Battery:
@@ -15,6 +18,7 @@ class Battery:
         self.battery_publisher = rospy.Publisher('~battery_state', sensor_msgs.BatteryState, queue_size=1)
         # subscibe to the is_charging topic
         rospy.Subscriber('~is_charging', Bool, self.chargingCallback)
+        rospy.Service('check_percentage', CheckPercentage, self.serviceCallback)
 
         # initialisations
         self.battery = sensor_msgs.BatteryState()
@@ -56,7 +60,7 @@ class Battery:
         self.seconds_elapsed = np.random.uniform(0, self.bat_max_life)
         print('Seconds chosen : ', self.seconds_elapsed)
 
-        self.white_noise = True
+        self.white_noise = False
 
     # Battery charge model
     def battery_charge(self, time, battery_autonomy):
@@ -78,6 +82,9 @@ class Battery:
             self.is_charging = bool(charging_state.data)
             # mirror the time elapsed to obtain the exact correspondence between the discharge and charge model timestamp
             self.seconds_elapsed = self.bat_half_life+(self.bat_half_life-self.seconds_elapsed)
+
+    def serviceCallback(self, request):
+        return CheckPercentageResponse(self.battery.percentage)
 
     def spin(self):
         """
