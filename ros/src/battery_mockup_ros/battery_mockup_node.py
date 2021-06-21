@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 import rospy
 import sensor_msgs.msg as sensor_msgs
 from std_msgs.msg import Bool
