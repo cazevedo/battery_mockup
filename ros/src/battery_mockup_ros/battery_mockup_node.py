@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 import rospy
 import sensor_msgs.msg as sensor_msgs
 from std_msgs.msg import Bool
@@ -19,7 +19,7 @@ class Battery:
         self.battery_publisher = rospy.Publisher('~battery_state', sensor_msgs.BatteryState, queue_size=1)
         # subscibe to the is_charging topic
         rospy.Subscriber('~is_charging', Bool, self.chargingCallback)
-        rospy.Service('check_percentage', CheckPercentage, self.serviceCallback)
+        rospy.Service('~check_percentage', CheckPercentage, self.serviceCallback)
 
         # initialisations
         self.battery = sensor_msgs.BatteryState()
