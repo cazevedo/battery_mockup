@@ -34,7 +34,7 @@ class CheckBatteryActionServer(object):
 
         rospy.loginfo('%s will check its battery' % (self._ns))
 
-        battery_service_name = self._ns+"check_percentage"
+        battery_service_name = self._ns+"battery_mockup/check_percentage"
 
         rospy.wait_for_service(battery_service_name)
 

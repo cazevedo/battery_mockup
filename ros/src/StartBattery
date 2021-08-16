@@ -32,7 +32,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node('InitialPoseHome')
 
-        start_charging = ChargingPublisher(robot_names=['robot_1', 'robot_2'], is_charging=[False, False])
+        start_charging = ChargingPublisher(robot_names=['jackal0'], is_charging=[False, False])
         start_charging.pub()
 
 
